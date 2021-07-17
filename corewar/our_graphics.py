@@ -32,7 +32,8 @@ BLACK = (0, 0, 0)
 WHITE = (255,255,255)
 
 # Colors are dark and bright
-WARRIOR_COLORS = (((0,0,100), (0,0,255)),
+WARRIOR_COLORS = (
+                  ((0,0,100), (0,0,255)),
                   ((0,100,0), (0,255,0)),
                   ((100,0,0), (255,0,0)),
                   ((0,100,100), (0,255,255)),
@@ -40,7 +41,17 @@ WARRIOR_COLORS = (((0,0,100), (0,0,255)),
                   ((66,66,100), (170,170,255)),
                   ((100,66,66), (255,170,170)),
                   ((66,100,66), (170,255,170)),
-                  ((100,100,0), (255,255,0)))
+                  ((100,100,0), (255,255,0)),
+                  ((0,0,100), (0,0,255)),
+                  ((0,100,0), (0,255,0)),
+                  ((100,0,0), (255,0,0)),
+                  ((0,100,100), (0,255,255)),
+                  ((100,0,100), (255,0,255)),
+                  ((66,66,100), (170,170,255)),
+                  ((100,66,66), (255,170,170)),
+                  ((66,100,66), (170,255,170)),
+                  ((100,100,0), (255,255,0))
+                  )
 
 def load_opcode_surfaces():
     "Load the images of the opcodes from the file"
@@ -386,8 +397,12 @@ if __name__ == "__main__":
                     paused = False
 
     # save records to a file
-    record_array = np.array([[[r.opcode, r.a_number, r.b_number, r.modifier] for r in record] for record in RR])
-    np.savez_compressed("games/test_0", record = record_array)
+    # record_array = np.array([[[r.opcode, r.a_number, r.b_number, r.modifier] for r in record] for record in RR])
+    # np.savez_compressed("games/test_0", record = record_array)
+
+    for i, record in enumerate(RR):
+        record_array = np.array([[r.opcode, r.a_number, r.b_number, r.modifier] for r in record])
+        np.savez("games/test_" + str(i), record = record_array)
 
     # exit pygame
     pygame.quit()
