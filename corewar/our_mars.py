@@ -482,6 +482,7 @@ if __name__ == "__main__":
     print (warriors[0].wins)
     print (warriors[0].instructions)
     print "saving the record..."
+    
     # save records to a file
     record_array = np.array([[[r.opcode, r.a_number, r.b_number, r.modifier] for r in record] for record in RR])
     np.savez_compressed("games/test_0", record = record_array)

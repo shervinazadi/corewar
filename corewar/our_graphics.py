@@ -114,6 +114,9 @@ class PygameMARS(MARS):
         self.core_surface = pygame.Surface(self.size)
         self.recent_events = pygame.Surface(self.size)
         self.recent_events.set_colorkey(DEFAULT_BG_COLOR)
+        # Added attribute to record the game in a numpy array
+        self.record = np.zeros((len(self), 5), dtype=int)
+        
 
     def reset(self, clear_instruction=DEFAULT_INITIAL_INSTRUCTION):
         self.core.clear(clear_instruction)
@@ -144,6 +147,15 @@ class PygameMARS(MARS):
         position = ((address % INSTRUCTIONS_PER_LINE) * INSTRUCTION_SIZE_X,
                     (address / INSTRUCTIONS_PER_LINE) * INSTRUCTION_SIZE_Y)
         instruction = self.core[address]
+
+        self.record[address] = np.array([
+            instruction.opcode, \
+            instruction.a_number, \
+            instruction.b_number, \
+            instruction.modifier, \
+            warrior.index
+            ])
+        # TODO: separate when the warrior is writing or reading
 
         if event_type in (EVENT_I_WRITE, EVENT_A_WRITE, EVENT_B_WRITE):
             # In case of a write event, we write the foreground with the
@@ -221,9 +233,11 @@ if __name__ == "__main__":
     warriors = [parse(file, environment) for file in args.warriors]
 
     # initialize wins, losses, ties and color for each warrior
-    for warrior, color in zip(warriors, WARRIOR_COLORS):
+    for wid, (warrior, color) in enumerate(zip(warriors, WARRIOR_COLORS)):
         warrior.wins = warrior.ties = warrior.losses = 0
         warrior.color = color
+        # added index to the warriors
+        warrior.index = wid + 1
 
     # create MARS
     simulation = PygameMARS(minimum_separation = args.distance,
@@ -283,7 +297,11 @@ if __name__ == "__main__":
             simulation.step()
 
             # recording the game
-            RR.append(copy.deepcopy(simulation.core.instructions))
+            # RR.append(copy.deepcopy(simulation.core.instructions))
+            RR.append(np.copy(simulation.record))
+
+            if cycle % 100 == 0:
+                print(cycle)
 
             # get mouse position
             mouse_pos = pygame.mouse.get_pos()
@@ -400,8 +418,8 @@ if __name__ == "__main__":
     # record_array = np.array([[[r.opcode, r.a_number, r.b_number, r.modifier] for r in record] for record in RR])
     # np.savez_compressed("games/test_0", record = record_array)
 
-    for i, record in enumerate(RR):
-        record_array = np.array([[r.opcode, r.a_number, r.b_number, r.modifier] for r in record])
+    for i, record_array in enumerate(RR):
+        # record_array = np.array([[r.opcode, r.a_number, r.b_number, r.modifier] for r in record])
         np.savez("games/test_" + str(i), record = record_array)
 
     # exit pygame
