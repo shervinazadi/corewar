@@ -115,7 +115,7 @@ class PygameMARS(MARS):
         self.recent_events = pygame.Surface(self.size)
         self.recent_events.set_colorkey(DEFAULT_BG_COLOR)
         # Added attribute to record the game in a numpy array
-        self.record = np.zeros((len(self), 5), dtype=int)
+        self.record = np.zeros((len(self), 6), dtype=int)
         
 
     def reset(self, clear_instruction=DEFAULT_INITIAL_INSTRUCTION):
@@ -148,15 +148,9 @@ class PygameMARS(MARS):
                     (address / INSTRUCTIONS_PER_LINE) * INSTRUCTION_SIZE_Y)
         instruction = self.core[address]
 
-        self.record[address] = np.array([
-            instruction.opcode, \
-            instruction.a_number, \
-            instruction.b_number, \
-            instruction.modifier, \
-            warrior.index
-            ])
-        # TODO: separate when the warrior is writing or reading
-
+        # warrior index initialization [read, write]
+        warrior_index = self.record[address, 4:].tolist()
+        print(warrior_index)
         if event_type in (EVENT_I_WRITE, EVENT_A_WRITE, EVENT_B_WRITE):
             # In case of a write event, we write the foreground with the
             # warrior's color
@@ -169,6 +163,9 @@ class PygameMARS(MARS):
                                                    DEFAULT_BG_COLOR),
                                     position, area=I_AREA)
             instruction.fg_color = warrior.color[1]
+            # change the warrior write index
+            warrior_index[1] = warrior.index
+
         elif event_type == EVENT_EXECUTED:
             # In case of execution, we write the background with warrior's color
             self.core_surface.blit(opcode_surface(instruction.opcode,
@@ -191,7 +188,16 @@ class PygameMARS(MARS):
             pygame.draw.rect(self.recent_events, warrior.color[1],
                              (position, (INSTRUCTION_SIZE_X, INSTRUCTION_SIZE_Y)),
                               1)
+            # change the warrior read index
+            warrior_index[0] = warrior.index
 
+        # Set the record of the action
+        self.record[address] = np.array([
+            instruction.opcode, \
+            instruction.a_number, \
+            instruction.b_number, \
+            instruction.modifier
+            ] + warrior_index)
 
 if __name__ == "__main__":
     import argparse
