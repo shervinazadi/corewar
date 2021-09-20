@@ -150,7 +150,7 @@ class PygameMARS(MARS):
 
         # warrior index initialization [read, write]
         warrior_index = self.record[address, 4:].tolist()
-        print(warrior_index)
+
         if event_type in (EVENT_I_WRITE, EVENT_A_WRITE, EVENT_B_WRITE):
             # In case of a write event, we write the foreground with the
             # warrior's color
